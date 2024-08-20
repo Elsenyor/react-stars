@@ -1,81 +1,67 @@
-import React from 'react';
+import { useMemo } from "react";
+import PropTypes from "prop-types";
 
 const defaultStyles = {
-    position: "relative",
-    overflow: "hidden",
-    cursor: "pointer",
-    display: "block",
-    float: "left",
+	position: "relative",
+	overflow: "hidden",
+	cursor: "pointer",
+	display: "block",
+	float: "left",
 };
 
-export default function Star(props) {
-    const {
-        index,
-        active,
-        config,
-        onMouseOver,
-        onMouseLeave,
-        onClick,
-        halfStarHidden,
-        halfStarAt,
-        isUsingIcons,
-        uniqueness
-    } = props;
+export default function Star({ index, active, config, onMouseOver, onMouseLeave, onClick, halfStarHidden, halfStarAt, isUsingIcons, uniqueness }) {
+	const { color, activeColor, size, char, isHalf, edit, halfIcon, emptyIcon, filledIcon } = config;
 
-    const {
-        color,
-        activeColor,
-        size,
-        char,
-        isHalf,
-        edit,
-        halfIcon,
-        emptyIcon,
-        filledIcon,
-    } = config;
+	const starClass = useMemo(() => {
+		if (isHalf && !halfStarHidden && halfStarAt === index) {
+			if (!isUsingIcons) return `react-stars-${uniqueness}`;
+			return "react-stars-half";
+		}
+		return "";
+	}, [isHalf, halfStarHidden, halfStarAt, index, isUsingIcons, uniqueness]);
 
-    let starClass = '';
-    let half = false;
+	const style = useMemo(() => {
+		return {
+			...defaultStyles,
+			color: active ? activeColor : color,
+			cursor: edit ? "pointer" : "default",
+			fontSize: `${size}px`,
+		};
+	}, [active, activeColor, color, size]);
 
-    if (isHalf && !halfStarHidden && halfStarAt === index) {
-        if (!isUsingIcons) starClass = `react-stars-${uniqueness}`;
-        else starClass = 'react-stars-half';
-        half = true;
-    }
+	const renderIcon = useMemo(() => {
+		if (!isUsingIcons) return char;
+		if (active) return filledIcon;
+		if (halfStarHidden) return emptyIcon;
+		return halfIcon;
+	}, [isUsingIcons, active, char, filledIcon, halfIcon, emptyIcon, halfStarHidden]);
 
-    const style = Object.assign({}, defaultStyles, {
-        color: active ? activeColor : color,
-        cursor: edit ? 'pointer' : 'default',
-        fontSize: `${size}px`
-    });
-
-    function renderIcon() {
-        if (!isUsingIcons) {
-            return char;
-        }
-        else {
-            if (active) {
-                return filledIcon;
-            }
-            else if (!active && half) {
-                return halfIcon;
-            }
-            else {
-                return emptyIcon;
-            }
-        }
-    }
-
-    return <span
-        className={starClass}
-        style={style}
-        key={index}
-        data-index={index}
-        data-forhalf={filledIcon ? index : char}
-        onMouseOver={onMouseOver}
-        onMouseMove={onMouseOver}
-        onMouseLeave={onMouseLeave}
-        onClick={onClick} >
-        {renderIcon()}
-    </span>
+	return (
+		<span
+			className={starClass}
+			style={style}
+			key={index}
+			data-index={index}
+			data-forhalf={filledIcon ? index : char}
+			onMouseOver={onMouseOver}
+			onMouseMove={onMouseOver}
+			onMouseLeave={onMouseLeave}
+			onClick={onClick}
+		>
+			{renderIcon}
+		</span>
+	);
 }
+
+Star.propTypes = {
+	index: PropTypes.number,
+	active: PropTypes.bool,
+	config: PropTypes.object,
+	onMouseOver: PropTypes.func,
+	onMouseLeave: PropTypes.func,
+	onClick: PropTypes.func,
+	halfStarHidden: PropTypes.bool,
+	halfStarAt: PropTypes.number,
+	isUsingIcons: PropTypes.bool,
+	uniqueness: PropTypes.string,
+};
